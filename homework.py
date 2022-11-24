@@ -62,12 +62,12 @@ def get_api_answer(timestamp):
         logging.info(f'Отправка запроса на {ENDPOINT} с параметрами {params}')
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
         if response.status_code != HTTPStatus.OK:
-            raise HTTPRequestError(response)
+            raise response
         return response.json()
     except JSONDecodeError:
-        raise exceptions.GeneralErorrs('Ошибка формата данных')
+        raise 'Ошибка формата данных'
     except requests.exceptions.RequestException:
-        raise exceptions.GeneralErorrs(f'Ошибка соединения')
+        raise 'Ошибка соединения'
 
 
 def check_response(response):
@@ -75,9 +75,9 @@ def check_response(response):
     if not isinstance(response, dict):
         raise TypeError('Ответ вернулся не в виде словаря')
     if 'homeworks' not in response:
-        raise CommonErrors('Ключа homeworks нет в словаре')
+        raise 'Ключа homeworks нет в словаре'
     if 'current_date' not in response:
-        raise CommonErrors('Ключа current_date нет в словаре')
+        raise 'Ключа current_date нет в словаре'
     if not isinstance(response['homeworks'], list):
         raise TypeError(
             'Запрос к серверу пришёл не в виде списка')
