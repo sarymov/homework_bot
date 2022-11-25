@@ -27,31 +27,31 @@ HOMEWORK_VERDICTS = {
 
 
 class NotSendingError(Exception):
-    """Кастомное исключение"""
+    """Кастомное исключение."""
 
     pass
 
 
 class WrongAPIResponseCodeError(Exception):
-    """Кастомное исключение"""
+    """Кастомное исключение."""
 
     pass
 
 
 class FormatAPIError(Exception):
-    """Кастомное исключение"""
+    """Кастомное исключение."""
 
     pass
 
 
 class ConnectionAPIError(Exception):
-    """Кастомное исключение"""
+    """Кастомное исключение."""
 
     pass
 
 
 class CustomError(Exception):
-    """Кастомное исключение"""
+    """Кастомное исключение."""
 
     pass
 
@@ -77,7 +77,8 @@ def send_message(bot, message):
 def get_api_answer(timestamp):
     """Функция делает запрос к API сервиса."""
     params = {'from_date': timestamp}
-    # Я немного не понял какой словарь нужно еще сюда написать, чтобы его применить#
+    # Я немного не понял какой словарь нужно еще сюда написать, #
+    # чтобы его применить #
     try:
         logging.info(f'Отправка запроса на {ENDPOINT} с параметрами {params}')
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
