@@ -28,26 +28,31 @@ HOMEWORK_VERDICTS = {
 
 class NotSendingError(Exception):
     """Кастомное исключение"""
+
     pass
 
 
 class WrongAPIResponseCodeError(Exception):
     """Кастомное исключение"""
+
     pass
 
 
 class FormatAPIError(Exception):
     """Кастомное исключение"""
+
     pass
 
 
 class ConnectionAPIError(Exception):
     """Кастомное исключение"""
+
     pass
 
 
 class CustomError(Exception):
     """Кастомное исключение"""
+
     pass
 
 
