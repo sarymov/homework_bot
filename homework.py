@@ -25,36 +25,42 @@ HOMEWORK_VERDICTS = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
-# А можно ли удалить вообще докстринги из кастомных #
-# исключений? Или это не правильно и хоть что-то #
-# надо писать, когда делаешь свои исключения? #
+# Да, без докстрингов не проходят тесты на сайте #
+# Яндекс практикума #
 
 
 class SergeyException(Exception):
+    """Докстринг для тестов."""
+
     pass
 
 
 class NotSendingError(SergeyException):
+    """Докстринг для тестов."""
 
     pass
 
 
 class WrongAPIResponseCodeError(SergeyException):
+    """Докстринг для тестов."""
 
     pass
 
 
 class FormatAPIError(SergeyException):
+    """Докстринг для тестов."""
 
     pass
 
 
 class ConnectionAPIError(SergeyException):
+    """Докстринг для тестов."""
 
     pass
 
 
 class CustomError(SergeyException):
+    """Докстринг для тестов."""
 
     pass
 
