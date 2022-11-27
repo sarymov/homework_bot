@@ -25,33 +25,36 @@ HOMEWORK_VERDICTS = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
+# А можно ли удалить вообще докстринги из кастомных #
+# исключений? Или это не правильно и хоть что-то #
+# надо писать, когда делаешь свои исключения? #
 
-class NotSendingError(Exception):
-    """Кастомное исключение."""
+
+class SergeyException(Exception):
+    pass
+
+
+class NotSendingError(SergeyException):
 
     pass
 
 
-class WrongAPIResponseCodeError(Exception):
-    """Кастомное исключение."""
+class WrongAPIResponseCodeError(SergeyException):
 
     pass
 
 
-class FormatAPIError(Exception):
-    """Кастомное исключение."""
+class FormatAPIError(SergeyException):
 
     pass
 
 
-class ConnectionAPIError(Exception):
-    """Кастомное исключение."""
+class ConnectionAPIError(SergeyException):
 
     pass
 
 
-class CustomError(Exception):
-    """Кастомное исключение."""
+class CustomError(SergeyException):
 
     pass
 
@@ -69,7 +72,7 @@ def send_message(bot, message):
     except telegram.error.TelegramError as error:
         msg = f'Ошибка отправки сообщения {error}'
         logging.error(msg)
-        raise NotSendingError(msg)
+        raise NotSendingError(msg) from error
     else:
         logging.debug(f'Сообщение {message} отправлено')
 
@@ -77,11 +80,15 @@ def send_message(bot, message):
 def get_api_answer(timestamp):
     """Функция делает запрос к API сервиса."""
     params = {'from_date': timestamp}
-    # Я немного не понял какой словарь нужно еще сюда написать, #
-    # чтобы его применить #
+    request_params = {
+        'url': ENDPOINT,
+        'headers': HEADERS,
+        'params': params
+    }
+
     try:
         logging.info(f'Отправка запроса на {ENDPOINT} с параметрами {params}')
-        response = requests.get(ENDPOINT, headers=HEADERS, params=params)
+        response = requests.get(**request_params)
         if response.status_code != HTTPStatus.OK:
             msg = 'Запрос к API не прошел'
             logging.error(msg)
@@ -99,9 +106,9 @@ def check_response(response):
     if not isinstance(response, dict):
         raise TypeError('Ответ вернулся не в виде словаря')
     if 'homeworks' not in response:
-        raise CustomError('Ключа homeworks нет в словаре')
+        raise KeyError('Ключа homeworks нет в словаре')
     if 'current_date' not in response:
-        raise CustomError('Ключа current_date нет в словаре')
+        raise KeyError('Ключа current_date нет в словаре')
     if not isinstance(response['homeworks'], list):
         raise TypeError(
             'Запрос к серверу пришёл не в виде списка')
@@ -112,21 +119,25 @@ def parse_status(homeworks):
     """Функция извлекает информации домашней работе и ее статус."""
     logging.debug('Извлекаем инфу о домашке и ее статусе')
     if 'homework_name' not in homeworks:
-        raise TypeError('Ключ homework_name не обнаружен в словаре')
+        raise KeyError('Ключ homework_name не обнаружен в словаре')
     homework_name = homeworks['homework_name']
     if 'status' not in homeworks:
-        raise TypeError('Ключ status не обнаружен в словаре')
+        raise KeyError('Ключ status не обнаружен в словаре')
     homework_status = homeworks.get('status')
     if homework_status is None:
-        raise TypeError('Пришел пустой список')
+        raise ValueError('Пришел пустой список')
     if homework_status not in HOMEWORK_VERDICTS:
-        raise TypeError('Статус не обнаружен в списке')
+        raise KeyError('Статус не обнаружен в списке')
     verdict = HOMEWORK_VERDICTS[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def main():
     """Основная логика работы бота."""
+    # Я не уверен, что правильно понял#
+    # и что удалил "отправку повторного#
+    # сообщения" #
+    first_msg = ''
     logging.debug('Работает основная логика')
     if not check_tokens():
         logging.critical('Отсутствует Токен(-ы)')
@@ -144,14 +155,13 @@ def main():
                 send_message(bot, parse_status(homeworks[0]))
             else:
                 logging.debug('Нет новых статусов')
-                send_message(bot, 'Нет новых статусов')
-            timestamp = response.get('current_date')
-
-        except Exception as error:
-            message = f'Сбой в работе программы: {error}'
-            send_message(bot, message)
         except Exception as error:
             logging.error(f'{error}')
+            message = f'Сбой в работе программы: {error}'
+            if message != first_msg:
+                send_message(bot, message)
+                first_msg = message
+                return first_msg
         finally:
             time.sleep(RETRY_PERIOD)
 
