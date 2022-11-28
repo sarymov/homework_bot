@@ -140,34 +140,38 @@ def parse_status(homeworks):
 
 def main():
     """Основная логика работы бота."""
-    # Я не уверен, что правильно понял#
-    # и что удалил "отправку повторного#
-    # сообщения" #
-    first_msg = ''
+    prev_report = None
+    first_msg = None
+    bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    timestamp = int(time.time())
     logging.debug('Работает основная логика')
+
     if not check_tokens():
         logging.critical('Отсутствует Токен(-ы)')
         sys.exit('Завершение работы из-за отсутствия Токенов')
-    bot = telegram.Bot(token=TELEGRAM_TOKEN)
-
-    timestamp = int(time.time())
 
     while True:
         try:
             response = get_api_answer(timestamp)
-            homeworks = check_response(response)
+            new_homeworks = check_response(response)
             logging.info(f'Получен список работ {response}')
-            if homeworks:
-                send_message(bot, parse_status(homeworks[0]))
+            if new_homeworks:
+                current_report = new_homeworks[0]
+                send_message(bot, parse_status(current_report))
+            if current_report != prev_report:
+                prev_report = parse_status(current_report)
+                send_message(bot, current_report)
             else:
                 logging.debug('Нет новых статусов')
+
+        except NotSendingError as error:
+            logging.error(f' Ошибка отправки {error}')
         except Exception as error:
             logging.error(f'{error}')
             message = f'Сбой в работе программы: {error}'
             if message != first_msg:
                 send_message(bot, message)
                 first_msg = message
-                return first_msg
         finally:
             time.sleep(RETRY_PERIOD)
 
