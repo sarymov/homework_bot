@@ -142,13 +142,15 @@ def main():
     """Основная логика работы бота."""
     prev_report = None
     first_msg = None
-    bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    timestamp = int(time.time())
+
     logging.debug('Работает основная логика')
 
     if not check_tokens():
         logging.critical('Отсутствует Токен(-ы)')
         sys.exit('Завершение работы из-за отсутствия Токенов')
+
+    bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    timestamp = int(time.time())
 
     while True:
         try:
@@ -157,10 +159,9 @@ def main():
             logging.info(f'Получен список работ {response}')
             if new_homeworks:
                 current_report = new_homeworks[0]
-                send_message(bot, parse_status(current_report))
             if current_report != prev_report:
                 prev_report = parse_status(current_report)
-                send_message(bot, current_report)
+                send_message(bot, parse_status(current_report))
             else:
                 logging.debug('Нет новых статусов')
 
